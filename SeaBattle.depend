@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1513736479 source:d:\codeblocks\seabattle\main.c
+1513740555 source:d:\codeblocks\seabattle2\main.c
 	<stdio.h>
 	<stdlib.h>
 	<time.h>

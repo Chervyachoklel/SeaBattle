@@ -85,7 +85,7 @@ void printMaps(Cell ships[][10], Cell hits[][10]){//выводит две карты в консоль 
         }
         printf("\n");
     }
-    printf("\n");
+    printf("\n\n");
 }
 
 int setShip(int ship, char dir, int x, int y, Cell map[][10]){//функция для установовки корабля
@@ -298,15 +298,15 @@ int shot(Cell ships[][10], Cell hits[][10], int x, int y){
 }
 
 typedef struct Recommend{// координаты в которые рекомендуется стрелять боту
-    Point point[4];
+    Point point;
 }Recommend;
 
 
-void clearRec(Recommend rec){//очистить рекомендуемые координаты
+void clearRec(Recommend rec[4]){//очистить рекомендуемые координаты
     int i;
     for (i = 0; i < 4; i++){
-        rec.point[i].x = -1;
-        rec.point[i].y = -1;
+        rec[i].point.x = -1;
+        rec[i].point.y = -1;
     }
 }
 
@@ -346,169 +346,206 @@ int main()
     clearStatus(comp.ships);// оставляем на карте только корабли
     //printMaps(comp.ships,comp.hits);
     int x,y;//координаты точки которые вводит человек
-    int flag;//
-    int xc,yc,hit = 0,j = 0;
-    Recommend recommend;//создаем рекомендуемые клетки для стрельбы бота
+    int flag;//для выстрела 0-убил 1-попал 2-промах
+    int xc,yc;//координаты выстрела компьютера
+    int hit = 0;//было ли попадание у компьютера
+    int j = 0;//переменная для прохода по рекомендуемым клеткам
+    Recommend recommend[4];//создаем рекомендуемые клетки для стрельбы бота
     clearRec(recommend);//очищаем значения
-    printf("rec: x: %d",recommend.point[0].x);
-    system("pause");
     int turn = 1;//1 - ходит человек, 2 - ходит компьютер
     int mode = 1;//для бота: 1 - рандомный выстрел 2 - добивание
     int win1 = 0,win2 = 0;
     while(win1 < 10 && win2 < 10){
         if (turn == 1){
-            printf("Human:\n");
-            printMaps(human.ships,human.hits);
-            printf("Comp:\n");
-            printMaps(comp.ships,comp.hits);
-            printf("win1: %d win2: %d\n",win1,win2);
+            //printf("Human:\n");
+            system("cls");//очищаем конслоль
+            printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);//количество потопленных кораблей
+            printMaps(human.ships, human.hits);//вывод карты кораблей и карты попаданий
+            //printf("Comp:\n");
+            //printMaps(comp.ships, comp.hits);
             printf("Введите координаты\n");
             scanf("%d%d",&x,&y);
-            if (human.hits[y][x].status != 0){
-                printf("Невозможно выстелить\n");
+            if (inMap(x,y) != 1){
+                printf("Неверно введены координаты\n");
+                system("pause");
                 continue;
             }
-            flag = shot(comp.ships,human.hits,x,y);
+            if (human.hits[y][x].status != 0){
+                printf("Невозможно выстелить\n");
+                system("pause");
+                continue;
+            }
+            flag = shot(comp.ships, human.hits, x, y);//производим выстрел
             if (flag == 0){
-                win1++;
-                printf("Убил\n");
+                win1++;//увеличиваем количество потопленных кораблей у игрока
+                printf("Убил!\n");
+                system("pause");
             }
             if (flag == 1){
-                printf("Попал\n");
+                printf("Попал!\n");
+                system("pause");
             }
             if (flag == 2){
-                printf("Промах\n");
-                turn = 2;
+                printf("Промах!\n");
+                turn = 2;// предоставляем ход компьютеру т.к. мы не попали
+                system("pause");
             }
         }
         else {//ход пк
-            if (mode == 1){
-                xc = rand() % 10;
+            if (mode == 1){//рандомный выстрел
+                xc = rand() % 10;//еще не было попадания поэтому выбираем рандомные координаты
                 yc = rand() % 10;
             }
-            else {//mode == 2
+            else {//mode == 2 добивание
                 if (hit != 0){
-                    if (recommend.point[j].x == -1){
-                        j++;
+                    if (recommend[j].point.x == -1){//проверяем есть ли значения у рекомендуемой точки
+                        j++;   //если нет, то переходим к следующей точке
                         continue;
                     }
-                    xc = recommend.point[j].x;
-                    yc = recommend.point[j].y;
+                    xc = recommend[j].point.x;
+                    yc = recommend[j].point.y;
                     j++;
-                    if (inMap(xc,yc)==0){
+                    if (inMap(xc,yc) != 1){//если координаты не в пределах карты то переходим к следующей рекомендуемой координате
                         continue;
                     }
                 }
             }
-
-            if (comp.hits[yc][xc].status != 0){
-
-                continue;
+            if (comp.hits[yc][xc].status != 0){//если компьютер стреляет по уже помеченной клетке
+                continue;//выбираются другие координаты
             }
-            flag = shot(human.ships, comp.hits, xc, yc);
+            flag = shot(human.ships, comp.hits, xc, yc);//производим выстрел
             if (flag == 0){
-                win2++;
-                int i;
-                for (i = 0; i < 4; i++){
-                    recommend.point[i].x = -1;
-                    recommend.point[i].y = -1;
-                }
-                j = 0;
-                mode = 1;
-                hit = 0;
+                win2++;//Компьютер убил корабль
+                clearRec(recommend);
+                j = 0;  //обнулем переменную для прохода по рекомендуемым точкам
+                mode = 1; // переходим в режим рандомной стрельбы
+                hit = 0; //обунуляем значения попадний
+                system("cls");
+                printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);
+                printMaps(human.ships, human.hits);
+                printf("Противник убил ваш корабль!\n");
+                printf("Последний выстрел: x: %d y: %d\n", xc, yc);
+                system("pause");
             }
-            if (flag == 1){
-                if (hit == 1){
+            if (flag == 1){//компьютер попал
+                if (hit == 1){//если до этого уже было одно попадание
                     int k;
-                    clearRec(recommend);
+                    clearRec(recommend);//очищаем от предыдущих значений
                     if (inMap(xc+1,yc) == 1){
                             if(comp.hits[yc][xc+1].status == 3){//если справа предыдущее поподание
-                                recommend.point[0].x = xc-1;
-                               recommend.point[0].y = yc;
-                               recommend.point[1].x = xc+2;
-                               recommend.point[1].y = yc;
-                               recommend.point[2].x = xc-2;
-                               recommend.point[2].y = yc;
-                               recommend.point[3].x = xc+3;
-                               recommend.point[3].y = yc;
+                                recommend[0].point.x = xc-1;
+                               recommend[0].point.y = yc;
+                               recommend[1].point.x = xc+2;
+                               recommend[1].point.y = yc;
+                               recommend[2].point.x = xc-2;
+                               recommend[2].point.y = yc;
+                               recommend[3].point.x = xc+3;
+                               recommend[3].point.y = yc;
 
                             }
 
                     }
                     if (inMap(xc-1,yc) == 1){
                         if(comp.hits[yc][xc-1].status == 3){//если слева предыдущее попадание
-                               recommend.point[0].x = xc-2;
-                               recommend.point[0].y = yc;
-                               recommend.point[1].x = xc+1;
-                               recommend.point[1].y = yc;
-                               recommend.point[2].x = xc-3;
-                               recommend.point[2].y = yc;
-                               recommend.point[3].x = xc+2;
-                               recommend.point[3].y = yc;
+                               recommend[0].point.x = xc-2;
+                               recommend[0].point.y = yc;
+                               recommend[1].point.x = xc+1;
+                               recommend[1].point.y = yc;
+                               recommend[2].point.x = xc-3;
+                               recommend[2].point.y = yc;
+                               recommend[3].point.x = xc+2;
+                               recommend[3].point.y = yc;
                             }
                     }
                     if (inMap(xc,yc+1) == 1){
                         if(comp.hits[yc+1][xc].status == 3){//если снизу предыдущее попадание
-                                recommend.point[0].x = xc;
-                               recommend.point[0].y = yc + 2;
-                               recommend.point[1].x = xc;
-                               recommend.point[1].y = yc - 1;
-                               recommend.point[2].x = xc;
-                               recommend.point[2].y = yc - 2;
-                               recommend.point[3].x = xc;
-                               recommend.point[3].y = yc + 3;
+                                recommend[0].point.x = xc;
+                               recommend[0].point.y = yc + 2;
+                               recommend[1].point.x = xc;
+                               recommend[1].point.y = yc - 1;
+                               recommend[2].point.x = xc;
+                               recommend[2].point.y = yc - 2;
+                               recommend[3].point.x = xc;
+                               recommend[3].point.y = yc + 3;
 
                             }
                     }
                     if (inMap(xc,yc-1) == 1){
                         if(comp.hits[yc-1][xc].status == 3){//если сверху предыдущее попадание
-                                recommend.point[0].x = xc;
-                               recommend.point[0].y = yc - 2;
-                               recommend.point[1].x = xc;
-                               recommend.point[1].y = yc + 1;
-                               recommend.point[2].x = xc;
-                               recommend.point[2].y = yc - 3;
-                               recommend.point[3].x = xc;
-                               recommend.point[3].y = yc + 2;
+                                recommend[0].point.x = xc;
+                               recommend[0].point.y = yc - 2;
+                               recommend[1].point.x = xc;
+                               recommend[1].point.y = yc + 1;
+                               recommend[2].point.x = xc;
+                               recommend[2].point.y = yc - 3;
+                               recommend[3].point.x = xc;
+                               recommend[3].point.y = yc + 2;
                             }
                     }
-                    j = 0;
-                    hit = 2;
+                    j = 0;//обнулем переменную для прохода по рекомендуемым точкам
+                    hit = 2;//было уже два или больше попаданий
+                    /* Пример:
+                            01234567
+                          0|00000000
+                          1|00000000 3 - клетка в которую попали
+                          2|0rr33rr0 r - рекомендуемые точки для стрельбы
+                          3|00000000
+                          4|00000000
+
+                    */
                 }
-                if (hit == 0){
+                if (hit == 0){//если еще не было попаданий
                     if (inMap(xc+1,yc) == 1){
-                        recommend.point[0].x = xc + 1;
-                        recommend.point[0].y = yc;
+                        recommend[0].point.x = xc + 1;
+                        recommend[0].point.y = yc;
                     }
                     if (inMap(xc-1,yc) == 1){
-                        recommend.point[1].x = xc - 1;
-                        recommend.point[1].y = yc;
+                        recommend[1].point.x = xc - 1;
+                        recommend[1].point.y = yc;
                     }
                     if (inMap(xc,yc+1) == 1){
-                        recommend.point[2].x = xc;
-                        recommend.point[2].y = yc + 1;
+                        recommend[2].point.x = xc;
+                        recommend[2].point.y = yc + 1;
                     }
                     if (inMap(xc,yc-1) == 1){
-                        recommend.point[3].x = xc;
-                        recommend.point[3].y = yc - 1;
+                        recommend[3].point.x = xc;
+                        recommend[3].point.y = yc - 1;
                     }
-                    hit = 1;
-
+                    hit = 1;//было одно попадание
+                    /*   Пример:
+                            0123456
+                          0|0000000
+                          1|00r0000 3 - клетка в которую попали
+                          2|0r3r000 r - рекомендуемые точки для стрельбы
+                          3|00r0000
+                          4|0000000
+                     */
                 }
-
                 mode = 2;//2
+                system("cls");
+                printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);
+                printMaps(human.ships, human.hits);
+                printf("Противник попал\n");
+                printf("x: %d y: %d\n", xc, yc);
+                system("pause");
             }
             if (flag == 2){
-
+                    system("cls");
+                    printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);
+                    printMaps(human.ships, human.hits);
+                    printf("Противник промахнулся\n");
+                    printf("Ваш ход\n");
                     turn = 1;//1
+                    system("pause");
+                    system("cls");
             }
             /*printf("xc: %d yc %d\n",xc,yc);
             printf("hits %d\n",hit);
             printf("win2: %d\n",win2);
             printf("x0: %d y0: %d x1: %d y1: %d x2: %d y2: %d x3: %d y3: %d \n",recommend.point[0].x,recommend.point[0].y,recommend.point[1].x,recommend.point[1].y,recommend.point[2].x,recommend.point[2].y,recommend.point[3].x,recommend.point[3].y);
             printMaps(comp.ships, comp.hits);
-            */
             system("pause");
+            */
         }
     }
     if (win1 == 10){
