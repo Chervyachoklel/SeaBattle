@@ -1,3 +1,9 @@
+/*
+Code::Blocks 16.01
+GNU GCC Compiler
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -6,45 +12,38 @@
 
 enum ConsoleColor {
     Black = 0,
-    Blue = 1,
+
     Green = 2,
-    Cyan = 3,
+
     Red = 4,
     Magenta = 5,
-    Brown = 6,
-    LightGray = 7,
-    DarkGray = 8,
-    LightBlue = 9,
-    LightGreen = 10,
-    LightCyan = 11,
-    LightRed = 12,
-    LightMagenta = 13,
+
     Yellow = 14,
     White = 15
 };
-void printColor(int x){
-HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-if (x == 0){
-    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Black));
-    printf("•");
-}
-if (x == 1){
-    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Green));
-    printf("o");
-}
-if (x == 2){
-    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Magenta));
-    printf("o",x);
-}
-if (x == 3){
-    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Yellow));
-    printf("o",x);
-}
-if (x == 4){
-    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Red));
-    printf("o",x);
-}
-return 0;
+void printColor(int x){//вывод цветных символов
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (x == 0){
+        SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Black));
+        printf("•");
+    }
+    if (x == 1){
+        SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Green));
+        printf("o");
+    }
+    if (x == 2){
+        SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Magenta));
+        printf("o",x);
+    }
+    if (x == 3){
+        SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Yellow));
+        printf("o",x);
+    }
+    if (x == 4){
+        SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Red));
+        printf("o",x);
+    }
+    return 0;
 }
 
 typedef struct Point{
@@ -60,7 +59,7 @@ typedef struct Cell{
 
 typedef struct Player{
     Cell ships[10][10];
-    Cell hits[10][10]; //возможно можно int
+    Cell hits[10][10];
 }Player;
 
 void clearMap(Cell map[][10]){//очищаю значения после создания игрока
@@ -91,23 +90,6 @@ void clearStatus(Cell map[][10]){//после расстановки очищаю карту от лишних знач
     }
 }
 
-void printMap(Cell map[][10]){//выводит карту в консоль
-    int size = 10;
-    printf(" #0123456789#\n");
-    int i,j;
-    for (i = 0; i < size; i++){
-        for (j = 0; j < size; j++){
-            if (j == 0)
-                printf("%d|",i);
-            printf("%d", map[i][j].status);
-            if (j == 9)
-                printf("|");
-        }
-        printf("\n");
-    }
-    printf(" #----------#\n");
-}
-
 void printMaps(Cell ships[][10], Cell hits[][10]){//выводит карту кораблей и карту выстрелов
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     int size = 10;
@@ -123,11 +105,9 @@ void printMaps(Cell ships[][10], Cell hits[][10]){//выводит карту кораблей и кар
             if (j >= 0 && j <= 9)
                 printColor(ships[i][j].status);
                 SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | White));
-                //printf("%d", ships[i][j].status);
             if (j >=10 && j <= 19)
                 printColor(hits[i][j-10].status);
                 SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | White));
-                //printf("%d", hits[i][j-10].status);
             if (j == 9)
                 if (i+1 != 10)
                     printf("|  %d|", i+1);
@@ -215,7 +195,7 @@ void manually(Cell map[][10], Cell hits[][10]){//расстановка кораблей вручную
     while(ships[1] != 0 || ships[2] !=0 || ships[3] != 0 || ships[4] != 0){
         system("cls");
         printMaps(map, hits);
-        printf("У вас: %d - однопалубных кораблей %d - двухпалубных кораблей %d - трехпалубных кораблей %d - четырехпалубных кораблей\n",ships[1],ships[2],ships[3],ships[4]);
+        printf("У вас: однопалубных - %d, двухпалубных - %d, трёхпалубных - %d, четырёхпалубных - %d\n",ships[1],ships[2],ships[3],ships[4]);
         printf("Выберите корабль:\n");
         scanf("%s",&s);
         ship = atoi(s);
@@ -224,7 +204,6 @@ void manually(Cell map[][10], Cell hits[][10]){//расстановка кораблей вручную
             system("pause");
             continue;
         }
-        //system("pause");
         if (ship >= 1 && ship <= 4 && ships[ship] > 0){ // если есть такой корабль и он длиной от 1 до 4, то продолжаем ввод
                 if (ship != 1){
                         printf("Выберите ориентацию корабля: h - горизонтальная, v - вертикальная\n");
@@ -273,11 +252,11 @@ int inMap(int x, int y){//проверяем находится ли точка в пределах карты
     else return 0;
 }
 
-void hitting(Cell hits[][10],Cell ships[][10], int x, int y){//помечаем клетки в которых точно нет корабля
+void hitting(Cell hits[][10], Cell ships[][10], int x, int y){//помечаем клетки в которых точно нет корабля
     if (inMap(y-1,x-1)==1){                // 202
-        hits[y-1][x-1].status = 2;
-        ships[y-1][x-1].status = 2;         // 030  2 - это клетки в которых нет корабля
-    }                                      // 202  3 - это клетка в которую мы сейчас попали
+        hits[y-1][x-1].status = 2;         // 030  3 - это клетка в которую мы сейчас попали
+        ships[y-1][x-1].status = 2;        // 202  2 - это клетки в которых точно нет корабля
+    }
     if (inMap(y-1,x+1)==1){
         hits[y-1][x+1].status = 2;
         ships[y-1][x+1].status = 2;
@@ -290,7 +269,6 @@ void hitting(Cell hits[][10],Cell ships[][10], int x, int y){//помечаем клетки в
         hits[y+1][x+1].status = 2;
         ships[y+1][x+1].status = 2;
     }
-
 }
 
 void markKill(Cell ships[][10], Cell hits[][10], int i, int j){//помечаем оставшиеся клетки вокруг корабля и клетки убитого корабля
@@ -299,28 +277,24 @@ void markKill(Cell ships[][10], Cell hits[][10], int i, int j){//помечаем оставш
     if (inMap(i-1,j) == 1){
         if (hits[i-1][j].status == 0){
             hits[i-1][j].status = 2;
-            //
             ships[i-1][j].status = 2;
         }
     }
     if (inMap(i+1,j) == 1){
         if (hits[i+1][j].status == 0){
             hits[i+1][j].status = 2;
-            //
             ships[i+1][j].status = 2;
         }
     }
     if (inMap(i,j-1) == 1){
         if (hits[i][j-1].status == 0){
             hits[i][j-1].status = 2;
-            //
             ships[i][j-1].status = 2;
         }
     }
     if (inMap(i,j+1) == 1){
         if (hits[i][j+1].status == 0){
             hits[i][j+1].status = 2;
-            //
             ships[i][j+1].status = 2;
         }
     }
@@ -346,14 +320,14 @@ int wasKill(Cell ships[][10], Cell hits[][10], int i, int j){
     if (ships[j][i].direction == 'h'){//для горизонтального корабля
         for (m = x; m < x + ships[j][i].length; m++){
                 if(ships[y][m].status == 3){
-                    markKill(ships,hits,y,m);// помечаем все оставшиеся клетки вокруг корабля
+                    markKill(ships, hits, y, m);// помечаем все оставшиеся клетки вокруг корабля
                 }
             }
         }
     if (ships[j][i].direction == 'v'){//для вертикального корабля
         for (m = y; m < y + ships[j][i].length; m++){
                 if(ships[m][x].status == 3){
-                    markKill(ships,hits,m,x);// помечаем все клетки вокруг потопленного корабля 2
+                    markKill(ships, hits, m, x);// помечаем все оставшиеся клетки вокруг корабля
                 }
             }
         }
@@ -371,7 +345,6 @@ int shot(Cell ships[][10], Cell hits[][10], int x, int y){
         return 1;//попал
     }else {
         hits[y][x].status = 2;//отмечаем клетку в которой нет корабля
-        //
         ships[y][x].status = 2;
         return 2;//промах
     }
@@ -380,7 +353,6 @@ int shot(Cell ships[][10], Cell hits[][10], int x, int y){
 typedef struct Recommend{// координаты в которые рекомендуется стрелять боту
     Point point;
 }Recommend;
-
 
 void clearRec(Recommend rec[4]){//очистить рекомендуемые координаты
     int i;
@@ -394,7 +366,7 @@ int main()
 {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);//для корректного изображения русских букв в консоле
-    srand(time(NULL));//чтобы рандом работал лучше
+    srand(time(NULL));//чтобы нормально работал рандом
 
     Player human;//создаем игрока человека
     clearMap(human.hits);//обнуляем значения карты
@@ -424,7 +396,6 @@ int main()
     clearMap(comp.ships);
     randomShip(comp.ships);// рандомно расставляем корабли
     clearStatus(comp.ships);// оставляем на карте только корабли
-    //printMaps(comp.ships,comp.hits);
     int x,y;//координаты точки которые вводит человек
     int flag;//для выстрела 0-убил 1-попал 2-промах
     int xc,yc;//координаты выстрела компьютера
@@ -434,26 +405,22 @@ int main()
     clearRec(recommend);//очищаем значения
     int turn = 1;//1 - ходит человек, 2 - ходит компьютер
     int mode = 1;//для бота: 1 - рандомный выстрел 2 - добивание
-    int win1 = 0,win2 = 0;
+    int win1 = 0,win2 = 0;//считаем количество убитых кораблей
     while(win1 < 10 && win2 < 10){
         if (turn == 1){
-            //printf("Human:\n");
             system("cls");//очищаем конслоль
             printf("Вы убили: %d Противник убил: %d\n", win1, win2);//количество потопленных кораблей
             printMaps(human.ships, human.hits);//вывод карты кораблей и карты попаданий
-            //printf("Comp:\n");
-            //printMaps(comp.ships, comp.hits);
             printf("Введите координаты\n");
-            //scanf("%d%d",&x,&y);
             char s[10], a[10];
-            scanf("%s",&s);
-            strncpy(a,s,1);
+            scanf("%s", &s);
+            strncpy(a, s, 1);
             int sz = strlen(s);
-            memmove(s,s+1,sz-1);
+            memmove(s, s+1, sz-1);
             s[sz-1] = 0;//удаляем первый символ
             y = atoi(s) - 1;
             x = *a - 'a';
-            if (inMap(x,y) != 1 || sz > 3){
+            if (inMap(x, y) != 1 || sz > 3){
                 printf("Неверно введены координаты\n");
                 system("pause");
                 continue;
@@ -466,9 +433,9 @@ int main()
             flag = shot(comp.ships, human.hits, x, y);//производим выстрел
             if (flag == 0){
                 system("cls");
+                win1++;//увеличиваем количество потопленных кораблей у игрока
                 printf("Вы убили: %d Противник убил: %d\n", win1, win2);
                 printMaps(human.ships, human.hits);
-                win1++;//увеличиваем количество потопленных кораблей у игрока
                 printf("Убил!\n");
                 system("pause");
             }
@@ -527,15 +494,24 @@ int main()
                 if (hit == 1){//если до этого уже было одно попадание
                     int k;
                     clearRec(recommend);//очищаем от предыдущих значений
+                    /* Пример:
+                            01234567
+                          0|00000000
+                          1|00000000 3 - клетка в которую попали
+                          2|0rr33rr0 r - рекомендуемые точки для стрельбы
+                          3|00000000
+                          4|00000000
+
+                    */
                     if (inMap(xc+1,yc) == 1){
                             if(comp.hits[yc][xc+1].status == 3){//если справа предыдущее поподание
-                                recommend[0].point.x = xc-1;
+                               recommend[0].point.x = xc - 1;
                                recommend[0].point.y = yc;
-                               recommend[1].point.x = xc+2;
+                               recommend[1].point.x = xc + 2;
                                recommend[1].point.y = yc;
-                               recommend[2].point.x = xc-2;
+                               recommend[2].point.x = xc - 2;
                                recommend[2].point.y = yc;
-                               recommend[3].point.x = xc+3;
+                               recommend[3].point.x = xc + 3;
                                recommend[3].point.y = yc;
 
                             }
@@ -543,19 +519,19 @@ int main()
                     }
                     if (inMap(xc-1,yc) == 1){
                         if(comp.hits[yc][xc-1].status == 3){//если слева предыдущее попадание
-                               recommend[0].point.x = xc-2;
+                               recommend[0].point.x = xc - 2;
                                recommend[0].point.y = yc;
-                               recommend[1].point.x = xc+1;
+                               recommend[1].point.x = xc + 1;
                                recommend[1].point.y = yc;
-                               recommend[2].point.x = xc-3;
+                               recommend[2].point.x = xc - 3;
                                recommend[2].point.y = yc;
-                               recommend[3].point.x = xc+2;
+                               recommend[3].point.x = xc + 2;
                                recommend[3].point.y = yc;
                             }
                     }
                     if (inMap(xc,yc+1) == 1){
                         if(comp.hits[yc+1][xc].status == 3){//если снизу предыдущее попадание
-                                recommend[0].point.x = xc;
+                               recommend[0].point.x = xc;
                                recommend[0].point.y = yc + 2;
                                recommend[1].point.x = xc;
                                recommend[1].point.y = yc - 1;
@@ -568,7 +544,7 @@ int main()
                     }
                     if (inMap(xc,yc-1) == 1){
                         if(comp.hits[yc-1][xc].status == 3){//если сверху предыдущее попадание
-                                recommend[0].point.x = xc;
+                               recommend[0].point.x = xc;
                                recommend[0].point.y = yc - 2;
                                recommend[1].point.x = xc;
                                recommend[1].point.y = yc + 1;
@@ -580,44 +556,45 @@ int main()
                     }
                     j = 0;//обнулем переменную для прохода по рекомендуемым точкам
                     hit = 2;//было уже два или больше попаданий
-                    /* Пример:
-                            01234567
-                          0|00000000
-                          1|00000000 3 - клетка в которую попали
-                          2|0rr33rr0 r - рекомендуемые точки для стрельбы
-                          3|00000000
-                          4|00000000
-
-                    */
                 }
                 if (hit == 0){//если еще не было попаданий
-                    if (inMap(xc+1,yc) == 1){
-                        recommend[0].point.x = xc + 1;
-                        recommend[0].point.y = yc;
+                    int f = 1, r , arr[4], i;
+                    arr[0] = rand() % 4;
+                    while (f < 4){
+                        M1: arr[f] = rand() % 4;
+                        for (i = 0; i < f; i++){
+                            if(arr[f] == arr[i])
+                                goto M1;
+                        }
+                        f++;
+                    }//генерируем массив из 4 различных чисел от 0 до 3 чтобы рекомендуемые клетки выбирались случайно
+                    if (inMap(xc + 1, yc) == 1){
+                        recommend[arr[0]].point.x = xc + 1;
+                        recommend[arr[0]].point.y = yc;
                     }
-                    if (inMap(xc-1,yc) == 1){
-                        recommend[1].point.x = xc - 1;
-                        recommend[1].point.y = yc;
+                    if (inMap(xc - 1, yc) == 1){
+                        recommend[arr[1]].point.x = xc - 1;
+                        recommend[arr[1]].point.y = yc;
                     }
-                    if (inMap(xc,yc+1) == 1){
-                        recommend[2].point.x = xc;
-                        recommend[2].point.y = yc + 1;
+                    if (inMap(xc, yc + 1) == 1){
+                        recommend[arr[2]].point.x = xc;
+                        recommend[arr[2]].point.y = yc + 1;
                     }
-                    if (inMap(xc,yc-1) == 1){
-                        recommend[3].point.x = xc;
-                        recommend[3].point.y = yc - 1;
+                    if (inMap(xc, yc - 1) == 1){
+                        recommend[arr[3]].point.x = xc;
+                        recommend[arr[3]].point.y = yc - 1;
                     }
                     hit = 1;//было одно попадание
                     /*   Пример:
                             0123456
                           0|0000000
                           1|00r0000 3 - клетка в которую попали
-                          2|0r3r000 r - рекомендуемые точки для стрельбы
+                          2|0r3r000 r - рекомендуемые клетки для стрельбы
                           3|00r0000
                           4|0000000
                      */
                 }
-                mode = 2;//2
+                mode = 2;
                 system("cls");
                 printf("Вы убили: %d Противник убил: %d\n", win1, win2);
                 printMaps(human.ships, human.hits);
@@ -630,17 +607,10 @@ int main()
                     printMaps(human.ships, human.hits);
                     printf("Противник промахнулся\n");
                     printf("Ваш ход\n");
-                    turn = 1;//1
+                    turn = 1;
                     system("pause");
                     system("cls");
             }
-            /*printf("xc: %d yc %d\n",xc,yc);
-            printf("hits %d\n",hit);
-            printf("win2: %d\n",win2);
-            printf("x0: %d y0: %d x1: %d y1: %d x2: %d y2: %d x3: %d y3: %d \n",recommend.point[0].x,recommend.point[0].y,recommend.point[1].x,recommend.point[1].y,recommend.point[2].x,recommend.point[2].y,recommend.point[3].x,recommend.point[3].y);
-            printMaps(comp.ships, comp.hits);
-            system("pause");
-            */
         }
     }
     if (win1 == 10){
