@@ -3,7 +3,6 @@ Code::Blocks 16.01
 GNU GCC Compiler
 */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,12 +11,9 @@ GNU GCC Compiler
 
 enum ConsoleColor {
     Black = 0,
-
     Green = 2,
-
     Red = 4,
     Magenta = 5,
-
     Yellow = 14,
     White = 15
 };
@@ -252,52 +248,17 @@ int inMap(int x, int y){//провер€ем находитс€ ли точка в пределах карты
     else return 0;
 }
 
-void hitting(Cell hits[][10], Cell ships[][10], int x, int y){//помечаем клетки в которых точно нет корабл€
-    if (inMap(y-1,x-1)==1){                // 202
-        hits[y-1][x-1].status = 2;         // 030  3 - это клетка в которую мы сейчас попали
-        ships[y-1][x-1].status = 2;        // 202  2 - это клетки в которых точно нет корабл€
-    }
-    if (inMap(y-1,x+1)==1){
-        hits[y-1][x+1].status = 2;
-        ships[y-1][x+1].status = 2;
-    }
-    if (inMap(y+1,x-1)==1){
-        hits[y+1][x-1].status = 2;
-        ships[y+1][x-1].status = 2;
-    }
-    if (inMap(y+1,x+1)==1){
-        hits[y+1][x+1].status = 2;
-        ships[y+1][x+1].status = 2;
-    }
-}
-
-void markKill(Cell ships[][10], Cell hits[][10], int i, int j){//помечаем оставшиес€ клетки вокруг корабл€ и клетки убитого корабл€
-    hits[i][j].status = 4;
-    ships[i][j].status = 4;//помечаем убитый корабль на двух картах
-    if (inMap(i-1,j) == 1){
-        if (hits[i-1][j].status == 0){
-            hits[i-1][j].status = 2;
-            ships[i-1][j].status = 2;
-        }
-    }
-    if (inMap(i+1,j) == 1){
-        if (hits[i+1][j].status == 0){
-            hits[i+1][j].status = 2;
-            ships[i+1][j].status = 2;
-        }
-    }
-    if (inMap(i,j-1) == 1){
-        if (hits[i][j-1].status == 0){
-            hits[i][j-1].status = 2;
-            ships[i][j-1].status = 2;
-        }
-    }
-    if (inMap(i,j+1) == 1){
-        if (hits[i][j+1].status == 0){
-            hits[i][j+1].status = 2;
-            ships[i][j+1].status = 2;
-        }
-    }
+void markKill(Cell ships[][10], Cell hits[][10], int y, int x){//помечаем оставшиес€ клетки вокруг корабл€ и клетки убитого корабл€
+    hits[y][x].status = 4;
+    ships[y][x].status = 4;//помечаем убитый корабль на двух картах
+    int i,j;
+    for (i = y - 1; i <= y+1; i++)
+        for (j = x - 1; j <= x + 1; j++)
+            if (inMap(i,j) == 1)
+                if(ships[i][j].status == 0){
+                        ships[i][j].status = 2;
+                        hits[i][j].status = 2;
+                }
 }
 
 int wasKill(Cell ships[][10], Cell hits[][10], int i, int j){
@@ -336,7 +297,6 @@ int wasKill(Cell ships[][10], Cell hits[][10], int i, int j){
 
 int shot(Cell ships[][10], Cell hits[][10], int x, int y){
     if (ships[y][x].status == 1){//попали в корабль
-        hitting(hits, ships, x, y);//помечаем клетки в которых точно нет корабл€
         hits[y][x].status = 3;//
         ships[y][x].status = 3;//подбитый корабль
         if(wasKill(ships,hits, x, y) == 1){//провер€ем был ли убит корабль
@@ -371,9 +331,10 @@ int main()
     Player human;//создаем игрока человека
     clearMap(human.hits);//обнул€ем значени€ карты
     clearMap(human.ships);
-    printf(" ак расставить корабли?\n 1 - случайно \n 2 - вручную\n");
 
     while(1){
+        system("cls");
+        printf(" ак расставить корабли?\n 1 - случайно \n 2 - вручную\n\n\nѕримеры ввода координат: a1, g10\n\n");
         int n;
         scanf("%d", &n);
         if (n == 1){
@@ -389,7 +350,10 @@ int main()
             printMaps(human.ships, human.hits);
             break;
         }
-        else printf("Ќекорректный ввод\n");
+        else{
+           printf("Ќекорректный ввод\n");
+           system("pause");
+        }
     }
     Player comp;//создаем бота
     clearMap(comp.hits);//обнул€ем значени€ карты
@@ -411,7 +375,7 @@ int main()
             system("cls");//очищаем конслоль
             printf("¬ы убили: %d ѕротивник убил: %d\n", win1, win2);//количество потопленных кораблей
             printMaps(human.ships, human.hits);//вывод карты кораблей и карты попаданий
-            printf("¬ведите координаты\n");
+            printf("¬ведите координаты:\n");
             char s[10], a[10];
             scanf("%s", &s);
             strncpy(a, s, 1);
@@ -568,6 +532,14 @@ int main()
                         }
                         f++;
                     }//генерируем массив из 4 различных чисел от 0 до 3 чтобы рекомендуемые клетки выбирались случайно
+                     /*   ѕример:
+                            0123456
+                          0|0000000
+                          1|00r0000 3 - клетка в которую попали
+                          2|0r3r000 r - рекомендуемые клетки дл€ стрельбы
+                          3|00r0000
+                          4|0000000
+                     */
                     if (inMap(xc + 1, yc) == 1){
                         recommend[arr[0]].point.x = xc + 1;
                         recommend[arr[0]].point.y = yc;
@@ -585,14 +557,7 @@ int main()
                         recommend[arr[3]].point.y = yc - 1;
                     }
                     hit = 1;//было одно попадание
-                    /*   ѕример:
-                            0123456
-                          0|0000000
-                          1|00r0000 3 - клетка в которую попали
-                          2|0r3r000 r - рекомендуемые клетки дл€ стрельбы
-                          3|00r0000
-                          4|0000000
-                     */
+
                 }
                 mode = 2;
                 system("cls");
@@ -613,11 +578,12 @@ int main()
             }
         }
     }
+    system("cls");
     if (win1 == 10){
-        printf("¬ы победили\n");
+        printf("¬ы победили!\n");
     }
     if (win2 == 10){
-        printf("¬ы проиграли\n");
+        printf("¬ы проиграли!\n");
     }
     return 0;
 }
