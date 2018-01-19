@@ -1,8 +1,42 @@
 # depslib dependency file v1.0
-1513861740 source:d:\codeblocks\seabattle6\main.c
+1514543302 source:d:\codeblocks\seabattle7\main.c
 	<stdio.h>
 	<stdlib.h>
 	<time.h>
 	<locale.h>
-	<Windows.h>
+	"setShip.h"
+	"printMaps.h"
+	"shot.h"
+	"bot.h"
+
+1514529528 d:\codeblocks\seabattle7\setship.h
+	"printMaps.h"
+	"time.h"
+
+1514538099 d:\codeblocks\seabattle7\printmaps.h
+	"windows.h"
+
+1514531402 source:d:\codeblocks\seabattle7\setship.c
+	"setShip.h"
+	"printMaps.h"
+	"time.h"
+
+1514532207 source:d:\codeblocks\seabattle7\printmaps.c
+	"printMaps.h"
+	"windows.h"
+
+1514089486 d:\codeblocks\seabattle7\shot.h
+	"printMaps.h"
+
+1514530042 source:d:\codeblocks\seabattle7\shot.c
+	"shot.h"
+	"printMaps.h"
+
+1514542867 d:\codeblocks\seabattle7\bot.h
+	"shot.h"
+	"printMaps.h"
+
+1514543166 source:d:\codeblocks\seabattle7\bot.c
+	"shot.h"
+	"printMaps.h"
 
