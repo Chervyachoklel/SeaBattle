@@ -2,8 +2,50 @@
 #include <stdlib.h>
 #include <time.h>
 #include <locale.h>
-#include <windows.h>
+#include <Windows.h>
 
+enum ConsoleColor {
+    Black = 0,
+    Blue = 1,
+    Green = 2,
+    Cyan = 3,
+    Red = 4,
+    Magenta = 5,
+    Brown = 6,
+    LightGray = 7,
+    DarkGray = 8,
+    LightBlue = 9,
+    LightGreen = 10,
+    LightCyan = 11,
+    LightRed = 12,
+    LightMagenta = 13,
+    Yellow = 14,
+    White = 15
+};
+void printColor(int x){
+HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+if (x == 0){
+    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Black));
+    printf("•");
+}
+if (x == 1){
+    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Green));
+    printf("o");
+}
+if (x == 2){
+    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Magenta));
+    printf("o",x);
+}
+if (x == 3){
+    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Yellow));
+    printf("o",x);
+}
+if (x == 4){
+    SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | Red));
+    printf("o",x);
+}
+return 0;
+}
 
 typedef struct Point{
     int x,y; //координаты начала корабля нужны для определения убийства корабля
@@ -67,17 +109,23 @@ void printMap(Cell map[][10]){//выводит карту в консоль
 }
 
 void printMaps(Cell ships[][10], Cell hits[][10]){//выводит две карты в консоль ships и hits
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     int size = 10;
     printf(" #0123456789#  #0123456789#\n");
     int i,j;
     for (i = 0; i < size; i++){
         for (j = 0; j < 2 * size ; j++){
+            SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | White));
             if (j == 0)
                 printf("%d|",i);
             if (j >= 0 && j <= 9)
-                printf("%d", ships[i][j].status);
+                printColor(ships[i][j].status);
+            SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | White));
+                //printf("%d", ships[i][j].status);
             if (j >=10 && j <= 19)
-                printf("%d", hits[i][j-10].status); //костыль
+                printColor(hits[i][j-10].status);
+            SetConsoleTextAttribute(hConsole, (WORD) ((Black << 4) | White));
+                //printf("%d", hits[i][j-10].status);
             if (j == 9)
                 printf("| %d|", i);
             if (j == 19)
@@ -134,10 +182,8 @@ int setShip(int ship, char dir, int x, int y, Cell map[][10]){//функция для уста
        .
      */
 }
-
 void randomShip(Cell map[][10]){//функция рандомной расстановки кораблей
     int ships[] = {0,4,3,2,1};//сейчас 4 - однопалубных 3 - двухпалубных 2 - трехпалубных и 1 - четырехбалубный
-                            //можно изменить количество кораблей
     while(ships[1] != 0 || ships[2] !=0 || ships[3] != 0 || ships[4] != 0){// цикл прервется когда все корабли закончатся
         int ship = 1 + rand() % 4;// рандомно выбираем кораль по его длине
         if (ship >= 1 && ship <= 4 && ships[ship] > 0){
@@ -152,37 +198,42 @@ void randomShip(Cell map[][10]){//функция рандомной расстановки кораблей
                 int e = setShip(ship, dir, x, y, map);//устанавливаем корабль
                 if (e == 0)
                     ships[ship]--;//если корабль успешно установлен, то -1 корабль данной длины
-
             }
-
         }
 }
 
 void manually(Cell map[][10]){//расстановка кораблей вручную
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
-
     int ships[] = {0,4,3,2,1};
     char dir;
     int x = 0, y = 0, e = 0, ship = 0;
-
     while(ships[1] != 0 || ships[2] !=0 || ships[3] != 0 || ships[4] != 0){
-        //printf("У вас: %d - однопалубных кораблей %d - двухпалубных кораблей %d - трехпалубных кораблей %d - четырехпалубных кораблей\n",ships[1],ships[2],ships[3],ships[4]);
+        system("cls");
+        printMap(map);
+        printf("У вас: %d - однопалубных кораблей %d - двухпалубных кораблей %d - трехпалубных кораблей %d - четырехпалубных кораблей\n",ships[1],ships[2],ships[3],ships[4]);
         printf("Выберите корабль:\n");
         scanf("%d", &ship);
         if (ship >= 1 && ship <= 4 && ships[ship] > 0){ // если есть такой корабль и он длиной от 1 до 4, то продолжаем ввод
-                printf("Выберите ориентацию корабля: h - горизонтальная, v - вертикальная\n");
-                dir = getche(); //направление корабля
-                printf("\n");
+                if (ship != 1){
+                        printf("Выберите ориентацию корабля: h - горизонтальная, v - вертикальная\n");
+                        dir = getche(); //направление корабля
+                        printf("\n");
+                        }
+                else dir = 'h';
+                if (dir != 'h' && dir != 'v'){
+                    printf("Неверно выбранно направление\n");
+                    system("pause");
+                    continue;
+                }
                 printf("Выберите клетку: x y\n");
-                scanf("%d",&x); //крашится
+                scanf("%d",&x);
                 scanf("%d",&y);
-                /*char z;
-                z = getche();
-                x = z - '0';
-                printf(" ");
-                z = getche();
-                y = z - '0';*/
+                if (inMap(x,y) != 1){
+                    printf("Неверные координаты\n");
+                    system("pause");
+                    continue;
+                }
                 e = setShip(ship, dir, x, y, map);// 1 - не удалось поставить корабль 2 - корабль установлен
                 if (e == 0){
                     ships[ship]--;
@@ -191,7 +242,6 @@ void manually(Cell map[][10]){//расстановка кораблей вручную
                     printf("Не удалось поставить корабль\n");
                     system("pause");
                 }
-                printMap(map);
             }
         else {
             printf("Такого коробля нет\n");
@@ -207,18 +257,22 @@ int inMap(int x, int y){//проверяем находится ли точка в пределах карты
     else return 0;
 }
 
-void hitting(Cell hits[][10],int x, int y){//помечаем клетки в которых точно нет корабля
+void hitting(Cell hits[][10],Cell ships[][10], int x, int y){//помечаем клетки в которых точно нет корабля
     if (inMap(y-1,x-1)==1){                // 202
-        hits[y-1][x-1].status = 2;         // 030  2 - это клетки в которых нет корабля
+        hits[y-1][x-1].status = 2;
+        ships[y-1][x-1].status = 2;         // 030  2 - это клетки в которых нет корабля
     }                                      // 202  3 - это клетка в которую мы сейчас попали
     if (inMap(y-1,x+1)==1){
         hits[y-1][x+1].status = 2;
+        ships[y-1][x+1].status = 2;
     }
     if (inMap(y+1,x-1)==1){
         hits[y+1][x-1].status = 2;
+        ships[y+1][x-1].status = 2;
     }
     if (inMap(y+1,x+1)==1){
         hits[y+1][x+1].status = 2;
+        ships[y+1][x+1].status = 2;
     }
 
 }
@@ -229,21 +283,29 @@ void markKill(Cell ships[][10], Cell hits[][10], int i, int j){//помечаем оставш
     if (inMap(i-1,j) == 1){
         if (hits[i-1][j].status == 0){
             hits[i-1][j].status = 2;
+            //
+            ships[i-1][j].status = 2;
         }
     }
     if (inMap(i+1,j) == 1){
         if (hits[i+1][j].status == 0){
             hits[i+1][j].status = 2;
+            //
+            ships[i+1][j].status = 2;
         }
     }
     if (inMap(i,j-1) == 1){
         if (hits[i][j-1].status == 0){
             hits[i][j-1].status = 2;
+            //
+            ships[i][j-1].status = 2;
         }
     }
     if (inMap(i,j+1) == 1){
         if (hits[i][j+1].status == 0){
             hits[i][j+1].status = 2;
+            //
+            ships[i][j+1].status = 2;
         }
     }
 }
@@ -284,7 +346,7 @@ int wasKill(Cell ships[][10], Cell hits[][10], int i, int j){
 
 int shot(Cell ships[][10], Cell hits[][10], int x, int y){
     if (ships[y][x].status == 1){//попали в корабль
-        hitting(hits, x, y);//помечаем клетки в которых точно нет корабля
+        hitting(hits, ships, x, y);//помечаем клетки в которых точно нет корабля
         hits[y][x].status = 3;//
         ships[y][x].status = 3;//подбитый корабль
         if(wasKill(ships,hits, x, y) == 1){//проверяем был ли убит корабль
@@ -293,6 +355,8 @@ int shot(Cell ships[][10], Cell hits[][10], int x, int y){
         return 1;//попал
     }else {
         hits[y][x].status = 2;//отмечаем клетку в которой нет корабля
+        //
+        ships[y][x].status = 2;
         return 2;//промах
     }
 }
@@ -359,13 +423,14 @@ int main()
         if (turn == 1){
             //printf("Human:\n");
             system("cls");//очищаем конслоль
-            printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);//количество потопленных кораблей
+            printf("Вы убили: %d Противник убил: %d\n", win1, win2);//количество потопленных кораблей
             printMaps(human.ships, human.hits);//вывод карты кораблей и карты попаданий
             //printf("Comp:\n");
             //printMaps(comp.ships, comp.hits);
             printf("Введите координаты\n");
             scanf("%d%d",&x,&y);
             if (inMap(x,y) != 1){
+
                 printf("Неверно введены координаты\n");
                 system("pause");
                 continue;
@@ -421,7 +486,7 @@ int main()
                 mode = 1; // переходим в режим рандомной стрельбы
                 hit = 0; //обунуляем значения попадний
                 system("cls");
-                printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);
+                printf("Вы убили: %d Противник убил: %d\n", win1, win2);
                 printMaps(human.ships, human.hits);
                 printf("Противник убил ваш корабль!\n");
                 printf("Последний выстрел: x: %d y: %d\n", xc, yc);
@@ -523,7 +588,7 @@ int main()
                 }
                 mode = 2;//2
                 system("cls");
-                printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);
+                printf("Вы убили: %d Противник убил: %d\n", win1, win2);
                 printMaps(human.ships, human.hits);
                 printf("Противник попал\n");
                 printf("x: %d y: %d\n", xc, yc);
@@ -531,7 +596,7 @@ int main()
             }
             if (flag == 2){
                     system("cls");
-                    printf("Вы убили: %d Компьютер убил: %d\n", win1, win2);
+                    printf("Вы убили: %d Противник убил: %d\n", win1, win2);
                     printMaps(human.ships, human.hits);
                     printf("Противник промахнулся\n");
                     printf("Ваш ход\n");

@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1513740555 source:d:\codeblocks\seabattle2\main.c
+1513748206 source:d:\codeblocks\seabattle3\main.c
 	<stdio.h>
 	<stdlib.h>
 	<time.h>
 	<locale.h>
-	<windows.h>
+	<Windows.h>
 
